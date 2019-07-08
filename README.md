@@ -5,19 +5,22 @@ There are the scripts for scientific article titled "Integrative analysis of gen
 
 # Requirement:
 R(https://www.r-project.org/, version >= 3.4) and R package as below:
-survival
-survminer
-forestplot
-openxlsx
-survivalROC
-survMisc
-ggplot2
-GGally
-parallel
-glmnet
-caret
-dplyr
+* survival
+* survminer
+* forestplot
+* openxlsx
+* survivalROC
+* survMisc
+* ggplot2
+* GGally
+* parallel
+* glmnet
+* caret
+* dplyr
 
 # Usage:
-
+Please put the supplementary_append.Rdata and the \*.R scripts in the same directory and change the workdir of R in the same directory.
+## Run the scripts: 
 Rscript \<the R script\>
+## Or open the R software then enter on the command line:
+load("\<the R script\>")
