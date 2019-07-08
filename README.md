@@ -8,7 +8,6 @@ R(https://www.r-project.org/, version >= 3.4) and R package as below:
 * survival
 * survminer
 * forestplot
-* openxlsx
 * survivalROC
 * survMisc
 * ggplot2
