@@ -5,17 +5,30 @@ There are the scripts for scientific article titled "Integrative analysis of gen
 
 # Requirement:
 R(https://www.r-project.org/, version >= 3.4) and R package as below:
-* survival
-* survminer
-* forestplot
-* survivalROC
-* survMisc
-* ggplot2
-* GGally
-* parallel
-* glmnet
+* biomaRt
 * caret
+* cluster
 * dplyr
+* factoextra
+* forestplot
+* gdata
+* gelnet
+* GGally
+* ggbeeswarm
+* ggplot2
+* ggpubr
+* glmnet
+* gridExtra
+* NbClust
+* openxlsx
+* parallel
+* survival
+* survivalROC
+* survminer
+* survMisc
+* synapseClient
+
+
 
 # Usage:
 Please put the supplementary_append.Rdata and the \*.R scripts in the same directory and change the workdir of R in the same directory.
