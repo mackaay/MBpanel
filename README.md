@@ -1,4 +1,4 @@
-# Project: GBMpanel
+# Project: MBpanel
 
 # Description:
 There are the scripts for scientific article titled "Integrative analysis of gene expression and DNA methylation based on the one-class logistic regression machine learning approach identifies stemness features in medulloblastoma". The scripts are encoded using R. They can generate the result of figures and tables from the article.
