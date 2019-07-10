@@ -1,17 +1,13 @@
-library(getopt)
 library(ggplot2)
 library(ggbeeswarm)
 library(ggpubr)
 library(gridExtra)
 
-command <- matrix(
-    c("sig","I",1,"character",
-      "Groups","G",1,"character",
-      "prefix","P",1,"character",
-      "outdir","O",1,"character")
-      ,byrow=T,ncol=4
-)
-opt <- getopt(command)
+opt <- NULL
+ opt$Groups <- "sample_clinical_info.txt"
+ opt$sig <- "mRNA_StemScore.tsv"
+ opt$prefix <- "mRNAsi"
+ opt$outdir <- "."
 
 if(!dir.exists(opt$outdir)){
     dir.create(opt$outdir)

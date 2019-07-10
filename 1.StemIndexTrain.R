@@ -27,7 +27,7 @@ main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
   ## Load RNAseq data
 #  synRNA <- synGet( "syn2701943", downloadLocation = "/data/PCBC" )
 #  X <- read.delim( synRNA@filePath ) %>%
-  X <- read.delim( "/home/yangyq/project/20.Medulloblastoma/PCBC/rnaseq_norm.tsv" ) %>%
+  X <- read.delim( "PCBC/rnaseq_norm.tsv" ) %>%
     tibble::column_to_rownames( "tracking_id" ) %>%
     as.matrix()
   
