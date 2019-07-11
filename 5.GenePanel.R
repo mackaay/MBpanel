@@ -10,6 +10,9 @@ library(parallel)
 library(glmnet)
 library(caret)
 library(dplyr)
+library(limma)
+library(tableone)
+library(ggpubr)
 
 # ---------------opt input-------------------
 opt <- NULL
@@ -403,7 +406,7 @@ if(opt$defFunctions){
     train_auc_obj_r1 <- list(train_auc_1year=train_auc_1year_r1,train_auc_3year=train_auc_3year_r1,train_auc_5year=train_auc_5year_r1)
     plot_roc(train_auc_obj_r1,opt$outdir,"SHH_train_data")
     pdf(paste0(opt$outdir,'/SHH_train_data_kmplot.pdf'))
-    train_data_km <- plot.shiny.km(train_data$Time,train_data$Dead,train_rs,cut=50,optimal.cut = T,assign.val="Train_cutoff",title = "17 mRNA based risk scoring prognostic model",xlab="time (years)",ylab="OS probability")
+    train_data_km <- plot.shiny.km(train_data$Time,train_data$Dead,train_rs,cut=50,optimal.cut = T,assign.val="Train_cutoff",xlab="time (years)",ylab="OS probability")
     print(train_data_km,newpage=F)
     dev.off()
     
@@ -414,7 +417,7 @@ if(opt$defFunctions){
     test_auc_obj_r1 <- list(test_auc_1year=test_auc_1year_r1,test_auc_3year=test_auc_3year_r1,test_auc_5year=test_auc_5year_r1)
     plot_roc(test_auc_obj_r1,opt$outdir,"SHH_test_data")
     pdf(paste0(opt$outdir,'/SHH_test_data_kmplot.pdf'))
-    test_data_km <- plot.shiny.km1(test_data$Time,test_data$Dead,test_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,title = "17 mRNA based risk scoring prognostic model",xlab="time (years)",ylab="OS probability")
+    test_data_km <- plot.shiny.km1(test_data$Time,test_data$Dead,test_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,xlab="time (years)",ylab="OS probability")
     print(test_data_km,newpage=F)
     dev.off()
     
@@ -425,7 +428,7 @@ if(opt$defFunctions){
     Group3_auc_obj_r1 <- list(Group3_auc_1year=Group3_auc_1year_r1,Group3_auc_3year=Group3_auc_3year_r1,Group3_auc_5year=Group3_auc_5year_r1)
     plot_roc(Group3_auc_obj_r1,opt$outdir,"Group3")
     pdf(paste0(opt$outdir,'/Group3_kmplot.pdf'))
-    Group3_km <- plot.shiny.km1(Group3$Time,Group3$Dead,Group3_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,title = "17 mRNA based risk scoring prognostic model",xlab="time (years)",ylab="OS probability")
+    Group3_km <- plot.shiny.km1(Group3$Time,Group3$Dead,Group3_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,xlab="time (years)",ylab="OS probability")
     print(Group3_km,newpage=F)
     dev.off()
     
@@ -436,7 +439,7 @@ if(opt$defFunctions){
     Group4_auc_obj_r1 <- list(Group4_auc_1year=Group4_auc_1year_r1,Group4_auc_3year=Group4_auc_3year_r1,Group4_auc_5year=Group4_auc_5year_r1)
     plot_roc(Group4_auc_obj_r1,opt$outdir,"Group4")
     pdf(paste0(opt$outdir,'/Group4_kmplot.pdf'))
-    Group4_km <- plot.shiny.km1(Group4$Time,Group4$Dead,Group4_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,title = "17 mRNA based risk scoring prognostic model",xlab="time (years)",ylab="OS probability")
+    Group4_km <- plot.shiny.km1(Group4$Time,Group4$Dead,Group4_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,xlab="time (years)",ylab="OS probability")
     print(Group4_km,newpage=F)
     dev.off()
     
@@ -453,13 +456,123 @@ if(opt$defFunctions){
     #plot_roc(WNT_auc_obj_r1,opt$outdir,"WNT")
     print(WNT_rs)
     pdf(paste0(opt$outdir,'/WNT_kmplot.pdf'))
-    WNT_km <- plot.shiny.km1(WNT$Time,WNT$Dead,WNT_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,title = "17 mRNA based risk scoring prognostic model",xlab="time (years)",ylab="OS probability")
+    WNT_km <- plot.shiny.km1(WNT$Time,WNT$Dead,WNT_rs,cut=Train_cutoff,optimal.cut = F,assign.val=NULL,xlab="time (years)",ylab="OS probability")
     print(WNT_km,newpage=F)
     dev.off()
     
     print(Train_cutoff)
+    
+    riskScore <- as.data.frame(c(train_rs,test_rs))
+    return(riskScore)
+    
   }
   
+  customPDF <- function(tMat,lightgrey,title){
+    
+    colorPDF1 <- ifelse(c(1:nrow(tMat)) %in% lightgrey,"#F2F2F2","#FFFFFF")
+    pdftab <- NULL
+    pdftab <- ggtexttable(tMat, rows = NULL,cols = NULL, theme = ttheme(padding = unit(c(12, 4), "mm"), 
+                                                                        tbody.style = tbody_style(fill = colorPDF1, hjust=0, x=0.1)))
+    
+    for (iv in 1:ncol(tMat)) {
+      pdftab <- table_cell_font(pdftab, row = 1, column = iv,face = "bold")
+      pdftab <- table_cell_bg(pdftab, row = 1, column = iv,fill="#A9A9A9",color = "#A9A9A9",linewidth = NULL)
+      pdftab <- table_cell_font(pdftab, row = 2, column = iv,face = "bold")
+      pdftab <- table_cell_bg(pdftab, row = 2, column = iv,fill="#A9A9A9",color = "#A9A9A9",linewidth = NULL)
+    }
+    
+    for (v in 3:nrow(tMat)) {
+      pdftab <- table_cell_font(pdftab, row = v, column = 1,face = "bold")
+      #   pdftab <- table_cell_bg(pdftab, row = v, column = 1,fill="#D9D9D9",color = "#FFFFFF",linewidth = NULL)
+      pdftab <- table_cell_font(pdftab, row = v, column = 2,face = "bold")
+      #   pdftab <- table_cell_bg(pdftab, row = v, column = 2,fill="#D9D9D9",color = "#FFFFFF",linewidth = NULL)
+    }
+    
+    
+    for (vii in which(tMat[2,]=="p")) {
+      noblankcp <- which(tMat[,1]!="")[-1]
+      for (vi in noblankcp) {
+        pvalue1 <- as.numeric(tMat[vi,vii])
+        colorpdfp <-  ifelse(pvalue1<=0.05,"#FFCC66","#D3D3D3")
+        pdftab <- table_cell_bg(pdftab, row = vi, column = vii,fill=colorpdfp,color = "#FFFFFF",linewidth = NULL)
+      }
+    }
+    
+    pdf(paste0(opt$outdir,'/ClinicStat/',title,'.pdf'),width=ncol(tMat)*2.5,height=ceiling(nrow(tMat)/3))
+    print(pdftab)
+    dev.off()
+  }
+
+  makeTab <- function(x){
+    tab <- CreateTableOne(vars = clinicVars, strata = x , data = data, factorVars = factorVars)
+    xDim <- max(length(tab$ContTable),length(tab$CatTable))
+    varlist <- tab$MetaData$vars
+    varFactors <- tab$MetaData$varFactors
+    varNumerics <- tab$MetaData$varNumerics
+    
+    getFreqm <- function(y){
+      freq <- NULL
+      for (i in 1:xDim) {
+        freq1 <- as.integer(tab$CatTable[[i]][[y]]$freq)
+        freq <- c(freq,freq1)
+      }
+      freqm <- min(freq)
+      return(freqm)
+    }
+    nonnormal <- varNumerics
+    
+    tMat <- print(tab, showAllLevels = TRUE, quote = FALSE, noSpaces = TRUE, printToggle = FALSE,pDigits = 30,exact = NULL, nonnormal = nonnormal)
+    
+    pvalue <- as.numeric(tMat[,"p"])
+    tMat[,"p"] <- gsub("      NA","", format(pvalue,digits = 4,scientific = TRUE))
+    # tMat <- gsub("exact","fisher_exact",tMat)
+    
+    gettesttext <- function(tMatrow){
+      n <- tMatrow
+      coln <- ncol(tMat)
+      if(tMat[n,coln-1]==" "){
+        return("")
+      }else{
+        if(tMat[n,coln]=="nonnorm"){
+          return("Kruskal-Wallis Test")
+        }else if(tMat[n,coln]=="exact"){
+          return("Fisher’s exact test")
+        }else if(tMat[n,coln]==""){
+          if(tMat[n,1]==""){
+            return("One-Way Anova")
+          }else{
+            return("Chisq Test")
+          }
+        }else{return("")}
+      }
+    }
+    
+    testtext <- sapply(1:nrow(tMat),gettesttext)
+    tMat[,ncol(tMat)] <- testtext
+    
+    n <- length(tMat[1,])-2
+    tMat <- rbind(c("",x,rep("", n)),colnames(tMat), tMat)
+    tMat <- cbind(row.names(tMat), tMat)
+    row.names(tMat) <- NULL
+    colnames(tMat) <- NULL
+    
+    noblankcp <- which(tMat[,which(tMat[2,]=="p")]!="")
+    noblankc <- which(tMat[,1]!="")
+    ii <- 2
+    lightgrey<- NULL
+    while(ii<length(noblankc)){
+      lightgrey1 <- seq(noblankc[ii],noblankc[ii+1]-1,1)
+      lightgrey <- c(lightgrey,lightgrey1)
+      ii <- ii+2
+    }
+    if(length(noblankc)==ii){
+      lightgrey1 <- seq(noblankc[ii],nrow(tMat),1)
+      lightgrey <- c(lightgrey,lightgrey1)
+    }
+
+    customPDF(tMat,lightgrey,x)
+    return(tMat)
+  }
 }
 
 # -------------------create dir--------------------
@@ -467,17 +580,49 @@ if(opt$defFunctions){
 if(!dir.exists(opt$outdir)){
   dir.create(opt$outdir)
 }
-if(!dir.exists(paste0(opt$outdir,"/SHH_train_Cox"))){
-  dir.create(paste0(opt$outdir,"/SHH_train_Cox"))
+if(!dir.exists(paste0(opt$outdir,"/ClinicStat"))){
+  dir.create(paste0(opt$outdir,"/ClinicStat"))
 }
+
+#-------------------Clinc Table---------------------
+#ALL
+data <- ALL.clindata
+factorVars <- NULL
+clinicVars <- colnames(ALL.clindata)[-c(1,12)]
+strata <- colnames(ALL.clindata)[12]
+tMats <- makeTab(strata)
+
+#SHH
+data <- SHH.clindata
+clinicVars <- colnames(SHH.clindata)[c(2:11)]
+strata <- colnames(SHH.clindata)[12]
+tMats <- makeTab(strata)
+
 # --------------------run train--------------------
 
-load("supplementary_append.Rdata")
-
+load("data.Rdata")
 set.seed(10086)
 
-features <- diflist[,opt$genecol]
+#--------------------difgene Analysis----------------
 
+exprSet <- SHH.expdata[-1]
+rownames(exprSet) <- SHH.expdata[,1]
+pheno <- SHH.sample.group
+pheno <- pheno[match(colnames(exprSet),pheno$Samples),]
+Group<-factor(pheno$Group,levels=c("mRNAsi_lower","mRNAsi_higher"))
+design <- model.matrix(~0+Group)
+colnames(design)=c("mRNAsi_lower","mRNAsi_higher")
+rownames(design)=pheno$Samples
+contrast.matrix<-makeContrasts(paste0(unique(pheno$Group),collapse = "-"),levels = design)
+fit <- lmFit(exprSet,design)
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+tempOutput = topTable(fit2, coef=1, n=Inf)
+nrDEG = na.omit(tempOutput) 
+
+features <-rownames(nrDEG[nrDEG$adj.P.Val<0.05,])
+
+#----------------------univ cox----------------------
 if(opt$ifuniv){
   univ_res <- univ_analysis(features,da=da)
   univ_res <- univ_res[!is.na(univ_res$univ_beta),]
@@ -487,14 +632,14 @@ if(opt$ifuniv){
   newDF1 <- cbind(rownames(univ_res),univ_res)
   newDF1 <- as.data.frame(lapply(newDF1,unlist),stringsAsFactors = F,check.names = F)
   colnames(newDF1)[1] <- "features"
-  write.table(newDF1,paste0(opt$outdir,"/SHH_train_Cox/",opt$train_prefix,".univ_res.txt"),row.names = F,col.names = T,quote=F,sep="\t")
+  write.table(newDF1,paste0(opt$outdir,"/",opt$train_prefix,".univ_res.txt"),row.names = F,col.names = T,quote=F,sep="\t")
   
   newDF <- dplyr::filter(newDF1,univ_p.value<=0.001)
-  write.table(newDF,paste0(opt$outdir,"/SHH_train_Cox/",opt$train_prefix,".univ_sig_res.txt"),row.names = F,col.names = T,quote=F,sep="\t")
+  write.table(newDF,paste0(opt$outdir,"/",opt$train_prefix,".univ_sig_res.txt"),row.names = F,col.names = T,quote=F,sep="\t")
   #****************************************************************************
   univ_sig_genes <- rownames(univ_sig_res)
   features <- univ_sig_genes
-}  # univ cox
+}
 
 do_da <- cbind(da[,1:2],da[,features])  # select univ cox sig gene for lesso
 
@@ -516,6 +661,21 @@ data_train <- dplyr::select(da,c("Time","Dead",gene_panel))
 
 # ------------------------run validation----------------------------
 
-cross_validation(data_train,data_validations[[1]],data_validations[[2]],data_validations[[3]],data_validations[[4]],gene_panel,1)
+riskScore <- cross_validation(data_train,data_validations[[1]],data_validations[[2]],data_validations[[3]],data_validations[[4]],gene_panel,1)
+SHH <- SHH.clindata[-1]
+rownames(SHH) <- SHH.clindata[,1]
+riskScore <- riskScore[rownames(SHH),,drop=F]
+new_SHH <- cbind(SHH,riskScore)
+colnames(new_SHH)[ncol(new_SHH)] <- "prognostic model"
+new_SHH$Gender <- factor(new_SHH$Gender,levels = c("F","M"))
+new_SHH$Histology <- factor(new_SHH$Histology,levels=c("Classic","Desmoplastic","LCA","MBEN"))
+new_SHH$MetStatus <- factor(new_SHH$MetStatus,levels=c("no","yes"))
+
+colnames(new_SHH) <- gsub("OS.years","Time",colnames(new_SHH))
+new_SHH$Dead <- ifelse(new_SHH$Dead=="dead",1,0)
+
+features <- c("Age","Gender","Histology","MetStatus","prognostic model")
+
+prognostic_model_mutiCox_res <- multi_cox(features,new_SHH)
 
 save(list=ls(),file="supplementary_append.Rdata")
