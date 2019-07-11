@@ -584,6 +584,13 @@ if(!dir.exists(paste0(opt$outdir,"/ClinicStat"))){
   dir.create(paste0(opt$outdir,"/ClinicStat"))
 }
 
+
+# --------------------run train--------------------
+
+load("data.Rdata")
+set.seed(10086)
+
+
 #-------------------Clinc Table---------------------
 #ALL
 data <- ALL.clindata
@@ -597,11 +604,6 @@ data <- SHH.clindata
 clinicVars <- colnames(SHH.clindata)[c(2:11)]
 strata <- colnames(SHH.clindata)[12]
 tMats <- makeTab(strata)
-
-# --------------------run train--------------------
-
-load("data.Rdata")
-set.seed(10086)
 
 #--------------------difgene Analysis----------------
 
