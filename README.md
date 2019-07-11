@@ -9,26 +9,33 @@ R(https://www.r-project.org/, version >= 3.4) and R package as below:
 * caret
 * cluster
 * dplyr
+* dplyr
 * factoextra
+* forestplot
 * forestplot
 * gdata
 * gelnet
 * GGally
 * ggbeeswarm
 * ggplot2
+* ggplot2
+* ggpubr
 * ggpubr
 * glmnet
 * gridExtra
+* limma
 * NbClust
 * openxlsx
 * parallel
 * survival
+* survival
 * survivalROC
+* survivalROC
+* survminer
 * survminer
 * survMisc
 * synapseClient
-
-
+* tableone
 
 # Usage:
 Please put the supplementary_append.Rdata and the \*.R scripts in the same directory and change the workdir of R in the same directory.
